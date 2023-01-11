@@ -357,11 +357,23 @@ class RegressionModel(GlobalForecastingModel):
         training_samples = np.concatenate(training_samples, axis=0)
         training_labels = np.concatenate(training_labels, axis=0)
 
-        training_samples = self._add_static_covariates(
-            self,
-            training_samples,
-            target_series,
-            *self.extreme_lags,
+        (
+            min_target_lag,
+            max_target_lag,
+            min_past_cov_lag,
+            min_future_cov_lag,
+            max_future_cov_lag,
+        ) = self.extreme_lags
+
+        training_samples = RegressionModel._add_static_covariates(
+            model=self,
+            features=training_samples,
+            target_series=target_series,
+            min_target_lag=min_target_lag,
+            output_chunk_length=self.output_chunk_length,
+            min_past_cov_lag=min_past_cov_lag,
+            min_future_cov_lag=min_future_cov_lag,
+            max_future_cov_lag=max_future_cov_lag,
             past_covariates=past_covariates,
             future_covariates=future_covariates,
             max_samples_per_ts=max_samples_per_ts,
@@ -843,11 +855,24 @@ class RegressionModel(GlobalForecastingModel):
 
             # concatenate retrieved lags
             X = np.concatenate(np_X, axis=1)
-            X = self._add_static_covariates(
-                self,
-                X,
-                series,
-                *self.extreme_lags,
+
+            (
+                min_target_lag,
+                max_target_lag,
+                min_past_cov_lag,
+                min_future_cov_lag,
+                max_future_cov_lag,
+            ) = self.extreme_lags
+
+            X = RegressionModel._add_static_covariates(
+                model=self,
+                features=X,
+                target_series=series,
+                min_target_lag=min_target_lag,
+                output_chunk_length=self.output_chunk_length,
+                min_past_cov_lag=min_past_cov_lag,
+                min_future_cov_lag=min_future_cov_lag,
+                max_future_cov_lag=max_future_cov_lag,
                 past_covariates=past_covariates,
                 future_covariates=future_covariates,
                 max_samples_per_ts=1,
