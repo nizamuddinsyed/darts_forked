@@ -154,6 +154,7 @@ class ForecastingModel(ABC, metaclass=ModelMeta):
             "Train series only contains {} elements but {} model requires at least {} entries".format(
                 len(series), str(self), self.min_train_series_length
             ),
+            logger,
         )
         self.training_series = series
         self._fit_called = True
@@ -1505,6 +1506,7 @@ class ForecastingModel(ABC, metaclass=ModelMeta):
                 (n_random_samples > 0) and (n_random_samples <= len(params)),
                 "If supplied as an integer, n_random_samples must be greater than 0 and less"
                 "than or equal to the size of the cartesian product of the hyperparameters.",
+                logger,
             )
             return sample(params, n_random_samples)
 
@@ -1512,6 +1514,7 @@ class ForecastingModel(ABC, metaclass=ModelMeta):
             raise_if_not(
                 (n_random_samples > 0.0) and (n_random_samples <= 1.0),
                 "If supplied as a float, n_random_samples must be greater than 0.0 and less than 1.0.",
+                logger,
             )
             return sample(params, int(n_random_samples * len(params)))
 
@@ -1602,7 +1605,8 @@ class ForecastingModel(ABC, metaclass=ModelMeta):
     def _assert_univariate(self, series: TimeSeries):
         if not series.is_univariate:
             raise_log(
-                ValueError("This model only supports univariate TimeSeries instances")
+                ValueError("This model only supports univariate TimeSeries instances"),
+                logger,
             )
 
 
@@ -1779,14 +1783,16 @@ class GlobalForecastingModel(ForecastingModel, ABC):
                 ValueError(
                     "The model has been trained with past covariates. Some matching past_covariates "
                     "have to be provided to `predict()`."
-                )
+                ),
+                logger,
             )
         if self._expect_future_covariates and future_covariates is None:
             raise_log(
                 ValueError(
                     "The model has been trained with future covariates. Some matching future_covariates "
                     "have to be provided to `predict()`."
-                )
+                ),
+                logger,
             )
 
     def _predict_wrapper(
@@ -2024,14 +2030,16 @@ class FutureCovariatesLocalForecastingModel(LocalForecastingModel, ABC):
                 ValueError(
                     "The model has been trained with `future_covariates` variable. Some matching "
                     "`future_covariates` variables have to be provided to `predict()`."
-                )
+                ),
+                logger,
             )
         if not self._expect_future_covariates and future_covariates is not None:
             raise_log(
                 ValueError(
                     "The model has been trained without `future_covariates` variable, but the "
                     "`future_covariates` parameter provided to `predict()` is not None.",
-                )
+                ),
+                logger,
             )
 
     @property
